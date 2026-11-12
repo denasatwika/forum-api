@@ -8,6 +8,7 @@ describe('DetailComment entity', () => {
     content: 'sebuah comment',
     isDelete: false,
     replies: [],
+    likeCount: 0,
   };
 
   it('should create DetailComment correctly', () => {
@@ -22,6 +23,7 @@ describe('DetailComment entity', () => {
     expect(detailComment.content).toEqual('sebuah comment');
     expect(detailComment).not.toHaveProperty('isDelete');
     expect(detailComment.replies).toEqual([]);
+    expect(detailComment.likeCount).toEqual(0);
   });
 
   it('should mask content when comment is deleted', () => {
@@ -51,6 +53,11 @@ describe('DetailComment entity', () => {
     expect(() => new DetailComment({ ...validPayload, content: 123 }))
       .toThrowError('DETAIL_COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
     expect(() => new DetailComment({ ...validPayload, isDelete: 'false' }))
+      .toThrowError('DETAIL_COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
+  });
+
+  it('should throw error when likeCount is not a number', () => {
+    expect(() => new DetailComment({ ...validPayload, likeCount: '2' }))
       .toThrowError('DETAIL_COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
   });
 });

@@ -74,4 +74,39 @@ describe('LikeRepositoryPostgres', () => {
       expect(likes).toHaveLength(0);
     });
   });
+
+  describe('getLikeCountsByThreadId function', () => {
+    it('should return empty array when no comment in the thread is liked', async () => {
+      const likeRepositoryPostgres = new LikeRepositoryPostgres(pool);
+
+      const likeCounts = await likeRepositoryPostgres.getLikeCountsByThreadId('thread-123');
+
+      expect(likeCounts).toEqual([]);
+    });
+
+    it('should return like count of each liked comment in the thread', async () => {
+      // Arrange
+      await UsersTableTestHelper.addUser({ id: 'user-456', username: 'johndoe' });
+      await CommentsTableTestHelper.addComment({ id: 'comment-456', threadId: 'thread-123' });
+      await CommentsTableTestHelper.addComment({ id: 'comment-789', threadId: 'thread-123' });
+
+      await LikesTableTestHelper.addLike({ commentId: 'comment-123', owner: 'user-123' });
+      await LikesTableTestHelper.addLike({ commentId: 'comment-123', owner: 'user-456' });
+      await LikesTableTestHelper.addLike({ commentId: 'comment-456', owner: 'user-123' });
+
+      await ThreadsTableTestHelper.addThread({ id: 'thread-999', owner: 'user-123' });
+      await CommentsTableTestHelper.addComment({ id: 'comment-999', threadId: 'thread-999' });
+      await LikesTableTestHelper.addLike({ commentId: 'comment-999', owner: 'user-123' });
+
+      const likeRepositoryPostgres = new LikeRepositoryPostgres(pool);
+
+      // Action
+      const likeCounts = await likeRepositoryPostgres.getLikeCountsByThreadId('thread-123');
+
+      // Assert
+      expect(likeCounts).toHaveLength(2);
+      expect(likeCounts).toContainEqual({ comment_id: 'comment-123', like_count: 2 });
+      expect(likeCounts).toContainEqual({ comment_id: 'comment-456', like_count: 1 });
+    });
+  });
 });
