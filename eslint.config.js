@@ -26,7 +26,7 @@ export default defineConfig([
     // Nama kolom database mengikuti konvensi snake_case PostgreSQL.
     rules: {
       camelcase: ['error', {
-        allow: ['^thread_id$', '^comment_id$', '^is_delete$'],
+        allow: ['^thread_id$', '^comment_id$', '^is_delete$', '^like_count$'],
       }],
     },
   },

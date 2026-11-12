@@ -6,6 +6,7 @@ import ThreadsTableTestHelper from '../../../../tests/ThreadsTableTestHelper.js'
 import ServerTestHelper from '../../../../tests/ServerTestHelper.js';
 import CommentsTableTestHelper from '../../../../tests/CommentsTableTestHelper.js';
 import RepliesTableTestHelper from '../../../../tests/RepliesTableTestHelper.js';
+import LikesTableTestHelper from '../../../../tests/LikesTableTestHelper.js';
 import container from '../../container.js';
 import createServer from '../createServer.js';
 
@@ -272,6 +273,31 @@ describe('/threads endpoint', () => {
       expect(typeof replies[0].date).toEqual('string');
       expect(replies[0]).not.toHaveProperty('commentId');
       expect(JSON.stringify(response.body)).not.toContain('balasan rahasia');
+    });
+
+    it('should response likeCount on each comment', async () => {
+      // Arrange
+      await UsersTableTestHelper.addUser({ id: 'user-123', username: 'dicoding' });
+      await UsersTableTestHelper.addUser({ id: 'user-456', username: 'johndoe' });
+      await ThreadsTableTestHelper.addThread({ id: 'thread-123', owner: 'user-123' });
+      await CommentsTableTestHelper.addComment({
+        id: 'comment-123', owner: 'user-123', date: '2021-08-13T05:17:13.024Z',
+      });
+      await CommentsTableTestHelper.addComment({
+        id: 'comment-456', owner: 'user-456', date: '2021-08-13T05:17:13.057Z',
+      });
+      await LikesTableTestHelper.addLike({ commentId: 'comment-123', owner: 'user-123' });
+      await LikesTableTestHelper.addLike({ commentId: 'comment-123', owner: 'user-456' });
+      const app = await createServer(container);
+
+      // Action
+      const response = await request(app).get('/threads/thread-123');
+
+      // Assert
+      const { comments } = response.body.data.thread;
+      expect(response.status).toEqual(200);
+      expect(comments[0].likeCount).toEqual(2);
+      expect(comments[1].likeCount).toEqual(0);
     });
   });
 });

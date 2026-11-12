@@ -6,6 +6,7 @@ import DetailComment from '../../../Domains/comments/entities/DetailComment.js';
 import DetailReply from '../../../Domains/replies/entities/DetailReply.js';
 import NotFoundError from '../../../Commons/exceptions/NotFoundError.js';
 import GetThreadDetailUseCase from '../GetThreadDetailUseCase.js';
+import LikeRepository from '../../../Domains/likes/LikeRepository.js';
 
 describe('GetThreadDetailUseCase', () => {
   it('should orchestrating the get thread detail action correctly', async () => {
@@ -13,6 +14,7 @@ describe('GetThreadDetailUseCase', () => {
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
     const mockReplyRepository = new ReplyRepository();
+    const mockLikeRepository = new LikeRepository();
 
     mockThreadRepository.getThreadById = vi.fn(() => Promise.resolve({
       id: 'thread-123',
@@ -56,10 +58,15 @@ describe('GetThreadDetailUseCase', () => {
       },
     ]));
 
+    mockLikeRepository.getLikeCountsByThreadId = vi.fn(() => Promise.resolve([
+      { comment_id: 'comment-123', like_count: 2 },
+    ]));
+
     const getThreadDetailUseCase = new GetThreadDetailUseCase({
       threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
       replyRepository: mockReplyRepository,
+      likeRepository: mockLikeRepository,
     });
 
     // Action
@@ -79,6 +86,7 @@ describe('GetThreadDetailUseCase', () => {
           date: '2021-08-08T07:22:33.555Z',
           content: 'sebuah comment',
           isDelete: false,
+          likeCount: 2,
           replies: [
             new DetailReply({
               id: 'reply-123',
@@ -102,6 +110,7 @@ describe('GetThreadDetailUseCase', () => {
           date: '2021-08-08T07:26:21.338Z',
           content: 'komentar rahasia',
           isDelete: true,
+          likeCount: 0,
           replies: [],
         }),
       ],
@@ -110,6 +119,7 @@ describe('GetThreadDetailUseCase', () => {
     expect(mockThreadRepository.getThreadById).toBeCalledWith('thread-123');
     expect(mockCommentRepository.getCommentsByThreadId).toBeCalledWith('thread-123');
     expect(mockReplyRepository.getRepliesByThreadId).toBeCalledWith('thread-123');
+    expect(mockLikeRepository.getLikeCountsByThreadId).toBeCalledWith('thread-123');
   });
 
   it('should not fetch comments and replies when thread is not found', async () => {
@@ -117,15 +127,18 @@ describe('GetThreadDetailUseCase', () => {
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
     const mockReplyRepository = new ReplyRepository();
+    const mockLikeRepository = new LikeRepository();
 
     mockThreadRepository.getThreadById = vi.fn(() => Promise.reject(new NotFoundError('thread tidak ditemukan')));
     mockCommentRepository.getCommentsByThreadId = vi.fn();
     mockReplyRepository.getRepliesByThreadId = vi.fn();
+    mockLikeRepository.getLikeCountsByThreadId = vi.fn();
 
     const getThreadDetailUseCase = new GetThreadDetailUseCase({
       threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
       replyRepository: mockReplyRepository,
+      likeRepository: mockLikeRepository,
     });
 
     // Action & Assert
@@ -134,5 +147,6 @@ describe('GetThreadDetailUseCase', () => {
     expect(mockThreadRepository.getThreadById).toBeCalledWith('thread-xxx');
     expect(mockCommentRepository.getCommentsByThreadId).not.toBeCalled();
     expect(mockReplyRepository.getRepliesByThreadId).not.toBeCalled();
+    expect(mockLikeRepository.getLikeCountsByThreadId).not.toBeCalled();
   });
 });
