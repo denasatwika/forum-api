@@ -3,3 +3,5 @@ node_modules
 config/database/test.json
 coverage
 .DS_Store
+.env
+.test.env
