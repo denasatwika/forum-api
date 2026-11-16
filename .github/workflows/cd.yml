@@ -11,13 +11,14 @@ jobs:
 
     steps:
       - name: SSH and deploy app
-        uses: appleboy/ssh-action@ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
+            set -e
             cd ~/forum-api
             git pull origin main
             npm ci --omit=dev --no-audit --no-fund
