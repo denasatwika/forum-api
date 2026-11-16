@@ -27,6 +27,17 @@ describe('HTTP server', () => {
     expect(response.status).toEqual(404);
   });
 
+  it('should not expose X-Powered-By header', async () => {
+    // Arrange
+    const app = await createServer({});
+
+    // Action
+    const response = await request(app).get('/unregisteredRoute');
+
+    // Assert
+    expect(response.headers['x-powered-by']).toBeUndefined();
+  });
+
   describe('when POST /users', () => {
     it('should response 201 and persisted user', async () => {
       // Arrange

@@ -12,6 +12,8 @@ import likes from '../../Interfaces/http/api/likes/index.js';
 const createServer = async (container) => {
   const app = express();
 
+  app.disable('x-powered-by');
+
   // Middleware for parsing JSON
   app.use(express.json());
 
